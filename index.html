@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Problem Navigator - LeetCode Style</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="btn-icon" id="toggleSidebarBtn" title="Toggle Problems Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="logo">
+                    <i class="fas fa-database"></i>
+                    Data 101 Exam Navigator 💾
+                </h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon" id="themeToggle" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Problem Panel -->
+            <div class="problem-panel" id="problemPanel">
+                <div class="resize-handle resize-handle-right" id="problemPanelResize"></div>
+                <div class="problem-header">
+                    <div class="problem-title-section">
+                        <h2 id="problemTitle">Chapter 1: Game Chat</h2>
+                        <div class="problem-meta">
+                            <div class="difficulty-badge" id="difficultyBadge">
+                                <span class="difficulty-text medium">30pt</span>
+                            </div>
+                            <span class="exam-info">Spring 2025 • Instructor: Aditya Parameswaran</span>
+                        </div>
+                    </div>
+                    <button class="btn-close" id="closeProblemPanel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="problem-content">
+                    <div class="problem-tabs">
+                        <button class="problem-tab-btn active" data-problem-tab="description">
+                            <i class="fas fa-info-circle"></i> Description & Schema
+                        </button>
+                        <button class="problem-tab-btn" data-problem-tab="context">
+                            <i class="fas fa-file-alt"></i> Question Context
+                        </button>
+                    </div>
+
+                    <div class="problem-tab-content active" id="problemTabDescription">
+                        <!-- Problem Description Section -->
+                        <div class="section">
+                            <h3 class="section-title">Description</h3>
+                            <div class="problem-description" id="problemDescription">
+                                <!-- Loaded dynamically from JSON -->
+                            </div>
+                        </div>
+
+                        <!-- Table Schema Section -->
+                        <div class="section">
+                            <h3 class="section-title">Table Schema</h3>
+                            <div class="schema-container" id="schemaContainer">
+                                <pre class="schema-code" id="schemaCode"><!-- Loaded dynamically from JSON --></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="problem-tab-content" id="problemTabContext">
+                        <div class="section">
+                            <div class="question-context-box" id="problemQuestionContext">
+                                <!-- Loaded dynamically from JSON -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Panel -->
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <div class="editor-tabs">
+                        <button class="tab-btn active" data-tab="questions">
+                            <i class="fas fa-question-circle"></i> Questions
+                        </button>
+                        <button class="tab-btn" data-tab="results">
+                            <i class="fas fa-check-circle"></i> Results
+                        </button>
+                    </div>
+                    <div class="editor-actions">
+                        <div class="question-navigation" id="questionNavigation" style="display: none;">
+                            <button class="btn-nav" id="prevQuestionBtn" title="Previous Question">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="question-counter" id="questionCounter">1 / 2</span>
+                            <button class="btn-nav" id="nextQuestionBtn" title="Next Question">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <button class="btn-action" id="toggleAnswersBtn" style="display: none;" title="Toggle Answer Visibility">
+                            <i class="fas fa-eye"></i> <span id="toggleAnswersText">Show Answers</span>
+                        </button>
+                        <button class="btn-action btn-submit" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Submit Answers
+                        </button>
+                    </div>
+                </div>
+
+                <div class="editor-content">
+                    <div class="tab-content active" id="questionsTab">
+                        <div class="questions-container" id="questionsContainer">
+                            <!-- Questions loaded dynamically from JSON -->
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="resultsTab">
+                        <div class="results-container">
+                            <div class="results-header">
+                                <span class="results-status" id="resultsStatus">Submit your answers to see results</span>
+                            </div>
+                            <div class="results-content" id="resultsContent">
+                                <div class="empty-results">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <p>Click "Submit Answers" to check your responses</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Sidebar -->
+        <div class="sidebar collapsed" id="sidebar">
+            <div class="resize-handle resize-handle-right" id="sidebarResize"></div>
+            <div class="sidebar-header">
+                <h3>Problems</h3>
+            </div>
+            <div class="problem-list" id="problemList">
+                <div class="problem-item active" data-problem="game-chat" data-question-file="game-chat">
+                    <div class="problem-item-header">
+                        <span class="problem-number">1.</span>
+                        <span class="problem-name">Game Chat</span>
+                    </div>
+                    <div class="problem-item-meta">
+                        <span class="difficulty-tag medium">30pt</span>
+                    </div>
+                </div>
+                <div class="problem-item" data-problem="food-delivery" data-question-file="food-delivery">
+                    <div class="problem-item-header">
+                        <span class="problem-number">2.</span>
+                        <span class="problem-name">Food Delivery</span>
+                    </div>
+                    <div class="problem-item-meta">
+                        <span class="difficulty-tag medium">20pt</span>
+                    </div>
+                </div>
+                <!-- More problems can be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load question data files -->
+    <script src="questions/game-chat.js"></script>
+    <script src="questions/food-delivery.js"></script>
+    <!-- Add more question files here as you create them -->
+    
+    <!-- Load main application script -->
+    <script src="script.js"></script>
+</body>
+</html>
+
