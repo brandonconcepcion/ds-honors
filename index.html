@@ -6,6 +6,8 @@
     <title>SQL Problem Navigator - LeetCode Style</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SQL.js for client-side SQL execution -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -92,6 +94,9 @@
                         <button class="tab-btn active" data-tab="questions">
                             <i class="fas fa-question-circle"></i> Questions
                         </button>
+                        <button class="tab-btn" data-tab="testcases" id="editorTestCasesTab" style="display: none;">
+                            <i class="fas fa-vial"></i> Test Cases
+                        </button>
                         <button class="tab-btn" data-tab="results">
                             <i class="fas fa-check-circle"></i> Results
                         </button>
@@ -122,6 +127,23 @@
                         </div>
                     </div>
 
+                    <div class="tab-content" id="testcasesTab">
+                        <div class="test-cases-results-container">
+                            <div class="test-cases-header">
+                                <h3>Assessment Test Cases</h3>
+                                <button class="btn-run-all-tests" id="runAllTestsBtn">
+                                    <i class="fas fa-play"></i> Run All Tests
+                                </button>
+                            </div>
+                            <div class="test-cases-results" id="testCasesResults">
+                                <div class="empty-test-cases">
+                                    <i class="fas fa-vial"></i>
+                                    <p>Click "Run All Tests" to execute assessment test cases</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="tab-content" id="resultsTab">
                         <div class="results-container">
                             <div class="results-header">
@@ -143,7 +165,10 @@
         <div class="sidebar collapsed" id="sidebar">
             <div class="resize-handle resize-handle-right" id="sidebarResize"></div>
             <div class="sidebar-header">
-                <h3>Problems</h3>
+                <div class="sidebar-header-content">
+                    <h3>Problems</h3>
+                    <span class="exam-badge">SP25 Midterm</span>
+                </div>
             </div>
             <div class="problem-list" id="problemList">
                 <div class="problem-item active" data-problem="game-chat" data-question-file="game-chat">
@@ -164,6 +189,15 @@
                         <span class="difficulty-tag medium">20pt</span>
                     </div>
                 </div>
+                <div class="problem-item" data-problem="sql-review" data-question-file="sql-review">
+                    <div class="problem-item-header">
+                        <span class="problem-number">3.</span>
+                        <span class="problem-name">SQL Review</span>
+                    </div>
+                    <div class="problem-item-meta">
+                        <span class="difficulty-tag medium">15pt</span>
+                    </div>
+                </div>
                 <!-- More problems can be added here -->
             </div>
         </div>
@@ -172,6 +206,7 @@
     <!-- Load question data files -->
     <script src="questions/game-chat.js"></script>
     <script src="questions/food-delivery.js"></script>
+    <script src="questions/sql-review.js"></script>
     <!-- Add more question files here as you create them -->
     
     <!-- Load main application script -->

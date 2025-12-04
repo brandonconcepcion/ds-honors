@@ -1,0 +1,32 @@
+{
+  "review.1": {
+    "assessmentCases": [
+      {
+        "id": "assessment-1",
+        "name": "Test Case 1",
+        "description": "Should return all book names and years",
+        "expectedOutput": [
+          {"book_name": "The Great Novel", "year": 2010},
+          {"book_name": "Data Science Guide", "year": 2020},
+          {"book_name": "Mystery at Midnight", "year": 2015},
+          {"book_name": "Python Programming", "year": 2021},
+          {"book_name": "The Art of Writing", "year": 2005}
+        ]
+      }
+    ]
+  },
+  "review.2": {
+    "assessmentCases": [
+      {
+        "id": "assessment-1",
+        "name": "Test Case 1",
+        "description": "Should return authors with debut year >= 2001",
+        "expectedOutput": [
+          {"author_name": "Jane Smith"},
+          {"author_name": "John Doe"},
+          {"author_name": "Alice Johnson"}
+        ]
+      }
+    ]
+  }
+}

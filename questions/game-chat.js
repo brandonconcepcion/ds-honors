@@ -1,79 +1,21 @@
 // Question data for: Chapter 1: Game Chat
+// This file loads the question data from the JSON file to eliminate redundancy
+// JSON is the single source of truth for question data
 window.questionData = window.questionData || {};
-window.questionData['game-chat'] = {
-    "id": "game-chat",
-    "title": "Chapter 1: Game Chat",
-    "points": 30,
-    "semester": "Spring 2025",
-    "instructor": "Aditya Parameswaran",
-    "description": "You are a new data engineer at an AI company that tries to detect toxic and positive messages sent in game chats, in order to promote a healthy gaming environment. As the company grows, it has gained many clients (game studios) who use the company's service.",
-    "relations": [
-        "games (id, name, type, studio)",
-        "players (id, name, game_id, reputation_score, signup_date, status)",
-        "messages (id, game_id, player_id, message, created_at)"
-    ],
-    "schema": {
-        "games": "CREATE TABLE games (\n    id INT,\n    name VARCHAR(30) NOT NULL,\n    type TEXT,\n    studio TEXT\n);",
-        "players": "CREATE TABLE players (\n    id INT,\n    name VARCHAR(30) NOT NULL,\n    game_id INT,\n    reputation_score INT,\n    signup_date DATE,\n    status TEXT\n);",
-        "messages": "CREATE TABLE messages (\n    id INT,\n    game_id INT,\n    player_id INT,\n    message TEXT,\n    created_at DATE\n);"
-    },
-    "questionContext": "You realize that your company was \"moving fast\" with its data models early on, so you need to fix things before they get worse. You start with the basics, such as what constraints may be present in the data, so that your relations are set up right. You start by inspecting the relations.",
-    "questions": [
-        {
-            "id": "1.1.i",
-            "title": "1.1.i [3 pt]",
-            "text": "Which columns could be primary keys? (Select all that apply.)",
-            "type": "multiple-choice",
-            "points": 3,
-            "options": [
-                {"value": "games.id", "label": "A. games.id", "isCorrect": true},
-                {"value": "games.type", "label": "B. games.type", "isCorrect": false},
-                {"value": "players.id", "label": "C. players.id", "isCorrect": true},
-                {"value": "players.game_id", "label": "D. players.game_id", "isCorrect": false},
-                {"value": "players.status", "label": "E. players.status", "isCorrect": false},
-                {"value": "messages.id", "label": "F. messages.id", "isCorrect": true},
-                {"value": "messages.game_id", "label": "G. messages.game_id", "isCorrect": false},
-                {"value": "messages.player_id", "label": "H. messages.player_id", "isCorrect": false}
-            ]
-        },
-        {
-            "id": "1.1.ii",
-            "title": "1.1.ii [3 pt]",
-            "text": "Which columns could be foreign keys? (Select all that apply.)",
-            "type": "multiple-choice",
-            "points": 3,
-            "options": [
-                {"value": "games.id", "label": "A. games.id", "isCorrect": false},
-                {"value": "games.type", "label": "B. games.type", "isCorrect": false},
-                {"value": "players.id", "label": "C. players.id", "isCorrect": false},
-                {"value": "players.game_id", "label": "D. players.game_id", "isCorrect": true},
-                {"value": "players.status", "label": "E. players.status", "isCorrect": false},
-                {"value": "messages.id", "label": "F. messages.id", "isCorrect": false},
-                {"value": "messages.game_id", "label": "G. messages.game_id", "isCorrect": true},
-                {"value": "messages.player_id", "label": "H. messages.player_id", "isCorrect": true}
-            ]
-        },
-        {
-            "id": "1.1.iii",
-            "title": "1.1.iii [3 pt]",
-            "text": "Games using your service are gaining new players. Your clients (games) want to impose a constraint: when a new player signs up, they cannot reuse an existing player name <strong>within the same game</strong>. However, users <strong>are</strong> allowed to reuse their player name across different games. What kind of constraint should you implement on the <code>players</code> table and on which column(s)?",
-            "type": "text-input-blanks",
-            "points": 3,
-            "prompt": "ALTER TABLE players ADD CONSTRAINT new_constraint ______________ (_____________);",
-            "blanks": [
-                {
-                    "id": "constraint-type",
-                    "placeholder": "Blank 1",
-                    "correctAnswer": "UNIQUE"
-                },
-                {
-                    "id": "columns",
-                    "placeholder": "Blank 2",
-                    "correctAnswer": "game_id, player_name"
-                }
-            ],
-            "hint": "Think about which columns together should be unique within the same game. Make sure to separate attributes with a comma, and space between them. Note: SQL is case-insensitive, so capitalization doesn't matter."
+
+(async function() {
+    try {
+        // Load question data from JSON file
+        const response = await fetch('questions/game-chat.json');
+        if (!response.ok) {
+            throw new Error(`Failed to load game-chat.json: ${response.statusText}`);
         }
-    ]
-};
+        const data = await response.json();
+        window.questionData['game-chat'] = data;
+    } catch (error) {
+        console.error('Error loading game-chat.json:', error);
+        console.warn('Note: Loading JSON requires a local server. Use: python3 -m http.server 8000');
+        // Fallback: You could add inline data here as a backup if needed
+    }
+})();
 

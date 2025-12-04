@@ -1,0 +1,53 @@
+{
+  "id": "sql-review",
+  "title": "SQL Review - Books Database",
+  "points": 10,
+  "semester": "Spring 2025",
+  "instructor": "Aditya Parameswaran",
+  "description": "Practice writing SQL queries on a books database. Write and execute your queries to see the results in real-time.",
+  "relations": [
+    "books (book_id, book_name, year, genre, author_id, times_trending)",
+    "authors (author_id, author_name, publishing_company, debut_year)",
+    "awards (award_id, book_id, award_name)"
+  ],
+  "schema": {
+    "books": "CREATE TABLE books (\n    book_id INT PRIMARY KEY,\n    book_name VARCHAR(100),\n    year INT,\n    genre VARCHAR(50),\n    author_id INT,\n    times_trending INT\n);",
+    "authors": "CREATE TABLE authors (\n    author_id INT PRIMARY KEY,\n    author_name VARCHAR(100),\n    publishing_company VARCHAR(100),\n    debut_year INT\n);",
+    "awards": "CREATE TABLE awards (\n    award_id INT PRIMARY KEY,\n    book_id INT,\n    award_name VARCHAR(100)\n);"
+  },
+  "dataFile": "questions/sql-review/data/sample-data.json",
+  "questionContext": "This is a practice exercise to help you review SQL query fundamentals. Write your queries in the SQL editor below and click 'Run Query' to execute them and see the results.",
+  "questions": [
+    {
+      "id": "review.1",
+      "title": "Task 1 [5 pt]",
+      "text": "Select only the book names and years from the books table.",
+      "type": "sql-execution",
+      "points": 5,
+      "correctQuery": "SELECT book_name, year FROM books;",
+      "expectedResult": [
+        {"book_name": "The Great Novel", "year": 2010},
+        {"book_name": "Data Science Guide", "year": 2020},
+        {"book_name": "Mystery at Midnight", "year": 2015},
+        {"book_name": "Python Programming", "year": 2021},
+        {"book_name": "The Art of Writing", "year": 2005}
+      ],
+      "hint": "Use SELECT to choose specific columns from the books table."
+    },
+    {
+      "id": "review.2",
+      "title": "Task 2 [5 pt]",
+      "text": "Find the names of all authors whose debut year is in the 21st century (defined as after 2000).",
+      "type": "sql-execution",
+      "points": 5,
+      "correctQuery": "SELECT author_name FROM authors WHERE debut_year >= 2001;",
+      "expectedResult": [
+        {"author_name": "Jane Smith"},
+        {"author_name": "John Doe"},
+        {"author_name": "Alice Johnson"}
+      ],
+      "hint": "Use WHERE clause with a condition on debut_year. The 21st century starts in 2001."
+    }
+  ]
+}
+

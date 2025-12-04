@@ -1,4 +1,4 @@
-// Question data for: Chapter 2: Food Delivery Order Management System
+// Question data for: SQL Review - Books Database
 // This file loads the question data from the JSON file to eliminate redundancy
 // JSON is the single source of truth for question data
 window.questionData = window.questionData || {};
@@ -6,14 +6,14 @@ window.questionData = window.questionData || {};
 (async function() {
     try {
         // Load question data from JSON file
-        const response = await fetch('questions/food-delivery.json');
+        const response = await fetch('questions/sql-review.json');
         if (!response.ok) {
-            throw new Error(`Failed to load food-delivery.json: ${response.statusText}`);
+            throw new Error(`Failed to load sql-review.json: ${response.statusText}`);
         }
         const data = await response.json();
-        window.questionData['food-delivery'] = data;
+        window.questionData['sql-review'] = data;
     } catch (error) {
-        console.error('Error loading food-delivery.json:', error);
+        console.error('Error loading sql-review.json:', error);
         console.warn('Note: Loading JSON requires a local server. Use: python3 -m http.server 8000');
         // Fallback: You could add inline data here as a backup if needed
     }

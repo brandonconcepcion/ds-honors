@@ -1,0 +1,66 @@
+{
+  "id": "food-delivery",
+  "title": "Chapter 2: Food Delivery Order Management System",
+  "points": 20,
+  "semester": "Spring 2025",
+  "instructor": "Aditya Parameswaran",
+  "description": "You are working on a simplified food delivery platform. The platform has users, restaurants, and drivers. The platform tracks transaction details.",
+  "relations": [
+    "orders (oid, rid, did, amount, platform)",
+    "restaurants (rid, name, cuisine, minimum_amount)",
+    "drivers (did, name, rating, vehicle)"
+  ],
+  "schema": {
+    "orders": "CREATE TABLE orders (\n    oid INT,\n    rid INT,\n    did INT,\n    amount DECIMAL,\n    platform TEXT\n);",
+    "restaurants": "CREATE TABLE restaurants (\n    rid INT,\n    name VARCHAR(50),\n    cuisine TEXT,\n    minimum_amount DECIMAL\n);",
+    "drivers": "CREATE TABLE drivers (\n    did INT,\n    name VARCHAR(50),\n    rating DECIMAL,\n    vehicle TEXT\n);"
+  },
+  "questionContext": "Consider the following SQL query:\n\n```sql\nSELECT r.name, SUM(o.amount)\nFROM restaurants r, orders o, drivers d\nWHERE r.rid = o.rid AND o.did = d.did\n  AND o.platform = 'UberEats' AND d.rating >= 4.5\nGROUP BY r.name\nHAVING COUNT(*) > 100;\n```\n\nThe query optimizer then produces the following execution plan, according to SQL query semantics. Based on the execution plan, answer the question below.",
+  "questions": [
+    {
+      "id": "2.1",
+      "title": "2.1 [6 pt]",
+      "text": "What extended relational operators should be in the nodes marked [I], [II], [III], [IV], [V], and [VI]?",
+      "type": "drag-drop",
+      "points": 6,
+      "operators": [
+        {"symbol": "π", "name": "Projection", "id": "pi"},
+        {"symbol": "ρ", "name": "Rename", "id": "rho"},
+        {"symbol": "σ", "name": "Selection", "id": "sigma"},
+        {"symbol": "⋈", "name": "Natural Join", "id": "join"},
+        {"symbol": "×", "name": "Cartesian Product", "id": "cartesian"},
+        {"symbol": "γ", "name": "Grouping/Aggregation", "id": "gamma"}
+      ],
+      "diagramImage": "images/food-delivery/diagram.png",
+      "nodeGroups": [
+        {"label": "[I]", "correctOperator": "pi", "count": 3, "defaultPositions": [
+          {"top": "15%", "left": "20%"},
+          {"top": "15%", "left": "50%"},
+          {"top": "15%", "left": "80%"}
+        ]},
+        {"label": "[II]", "correctOperator": "sigma", "count": 2, "defaultPositions": [
+          {"top": "25%", "left": "35%"},
+          {"top": "25%", "left": "65%"}
+        ]},
+        {"label": "[III]", "correctOperator": "join", "count": 2, "defaultPositions": [
+          {"top": "40%", "left": "30%"},
+          {"top": "40%", "left": "70%"}
+        ]},
+        {"label": "[IV]", "correctOperator": "gamma", "count": 1, "defaultPositions": [
+          {"top": "60%", "left": "50%"}
+        ]},
+        {"label": "[V]", "correctOperator": "sigma", "count": 1, "defaultPositions": [
+          {"top": "75%", "left": "50%"}
+        ]},
+        {"label": "[VI]", "correctOperator": "pi", "count": 1, "defaultPositions": [
+          {"top": "88%", "left": "50%"}
+        ]}
+      ],
+      "executionPlan": {
+        "description": "Execution plan showing the flow from base tables through operations to final result",
+        "structure": "Three base tables (restaurants, orders, drivers) flow through operations [I], [II], [III], [IV], [V], [VI]"
+      }
+    }
+  ]
+}
+

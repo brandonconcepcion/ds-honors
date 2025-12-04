@@ -161,9 +161,31 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+.sidebar-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
 .sidebar-header h3 {
     font-size: 16px;
     font-weight: 600;
+    margin: 0;
+}
+
+.exam-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    background-color: var(--bg-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    width: fit-content;
 }
 
 .problem-list {
@@ -1566,5 +1588,502 @@ body {
         bottom: 0;
         z-index: 99;
     }
+}
+
+/* SQL Execution Questions */
+.sql-execution-group {
+    margin-top: 16px;
+}
+
+.sql-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.sql-editor {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    resize: vertical;
+    tab-size: 4;
+}
+
+.sql-editor:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.sql-editor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-run-query,
+.btn-clear-query {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-run-query {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-run-query:hover {
+    background-color: var(--accent-color-hover);
+    transform: translateY(-1px);
+}
+
+.btn-run-query:active {
+    transform: translateY(0);
+}
+
+.btn-clear-query {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-clear-query:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.sql-results-container {
+    margin-top: 16px;
+    min-height: 100px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
+    padding: 16px;
+}
+
+.sql-results-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.sql-results-placeholder i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.sql-results-table-container {
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.sql-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.sql-results-table thead {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-tertiary);
+    z-index: 1;
+}
+
+.sql-results-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.sql-results-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.sql-results-table tbody tr:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.sql-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--error-color);
+    text-align: center;
+}
+
+.sql-error i {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.sql-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--success-color);
+    text-align: center;
+}
+
+.sql-success i {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.sql-answer-feedback {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.sql-answer-feedback.correct {
+    background-color: rgba(var(--success-color-rgb), 0.1);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
+
+.sql-answer-feedback.incorrect {
+    background-color: rgba(var(--error-color-rgb), 0.1);
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+}
+
+/* Test Cases Styling */
+.test-cases-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.test-case-question-group {
+    margin-bottom: 24px;
+}
+
+.test-case-question-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.practice-test-case {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.test-case-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.test-case-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.btn-run-test-case {
+    padding: 4px 12px;
+    font-size: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-run-test-case:hover {
+    background-color: var(--accent-color-hover);
+}
+
+.test-case-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.test-case-input {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.test-case-code {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.test-case-output {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.test-case-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 12px;
+}
+
+.test-case-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 8px;
+}
+
+.test-case-table th,
+.test-case-table td {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.test-case-table th {
+    background-color: var(--bg-tertiary);
+    font-weight: 600;
+}
+
+.test-case-error {
+    color: var(--error-color);
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* Assessment Test Cases (Right Panel) */
+.test-cases-results-container {
+    padding: 16px;
+}
+
+.test-cases-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.test-cases-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.btn-run-all-tests {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-run-all-tests:hover {
+    background-color: var(--accent-color-hover);
+}
+
+.test-cases-summary {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.summary-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.stat-item {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.assessment-test-case-group {
+    margin-bottom: 24px;
+}
+
+.assessment-question-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.assessment-test-case-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.assessment-test-case-item.passed {
+    border-left: 4px solid var(--success-color);
+}
+
+.assessment-test-case-item.failed {
+    border-left: 4px solid var(--error-color);
+}
+
+.assessment-test-case-item.not-run {
+    border-left: 4px solid var(--text-secondary);
+    opacity: 0.7;
+}
+
+.test-case-status-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.test-case-status-icon .fa-check-circle {
+    color: var(--success-color);
+}
+
+.test-case-status-icon .fa-times-circle {
+    color: var(--error-color);
+}
+
+.test-case-status-icon .fa-circle {
+    color: var(--text-secondary);
+}
+
+.test-case-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.test-case-info .test-case-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.test-case-info .test-case-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.test-case-error-details {
+    font-size: 11px;
+    color: var(--error-color);
+    margin-top: 8px;
+}
+
+.test-case-expected-output {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.test-case-expected-output strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.test-case-expected-output table {
+    margin-top: 8px;
+}
+
+.test-case-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.test-case-status.passed {
+    background-color: rgba(var(--success-color-rgb), 0.1);
+    color: var(--success-color);
+}
+
+.test-case-status.failed {
+    background-color: rgba(var(--error-color-rgb), 0.1);
+    color: var(--error-color);
+}
+
+.empty-test-cases {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.empty-test-cases i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
 }
 

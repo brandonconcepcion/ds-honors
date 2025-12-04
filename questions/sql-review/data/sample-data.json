@@ -1,0 +1,21 @@
+{
+  "books": [
+    {"book_id": 1, "book_name": "The Great Novel", "year": 2010, "genre": "Fiction", "author_id": 1, "times_trending": 5},
+    {"book_id": 2, "book_name": "Data Science Guide", "year": 2020, "genre": "Non-Fiction", "author_id": 2, "times_trending": 12},
+    {"book_id": 3, "book_name": "Mystery at Midnight", "year": 2015, "genre": "Mystery", "author_id": 1, "times_trending": 8},
+    {"book_id": 4, "book_name": "Python Programming", "year": 2021, "genre": "Technical", "author_id": 2, "times_trending": 15},
+    {"book_id": 5, "book_name": "The Art of Writing", "year": 2005, "genre": "Non-Fiction", "author_id": 3, "times_trending": 3}
+  ],
+  "authors": [
+    {"author_id": 1, "author_name": "Jane Smith", "publishing_company": "BookHouse", "debut_year": 2008},
+    {"author_id": 2, "author_name": "John Doe", "publishing_company": "TechPress", "debut_year": 2018},
+    {"author_id": 3, "author_name": "Alice Johnson", "publishing_company": "Literary Works", "debut_year": 2003},
+    {"author_id": 4, "author_name": "Bing Concepcion", "publishing_company": "Bench Press Publishing", "debut_year": 1995}
+  ],
+  "awards": [
+    {"award_id": 1, "book_id": 1, "award_name": "Best Fiction"},
+    {"award_id": 2, "book_id": 2, "award_name": "Technical Excellence"},
+    {"award_id": 3, "book_id": 4, "award_name": "Technical Excellence"}
+  ]
+}
+

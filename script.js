@@ -47,6 +47,9 @@ toggleSidebarBtn.addEventListener('click', () => {
     sidebar.classList.toggle('collapsed');
     backdrop.classList.toggle('active', !sidebar.classList.contains('collapsed'));
     
+    // Save state
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    
     // Update icon based on state
     if (sidebar.classList.contains('collapsed')) {
         sidebarIcon.classList.remove('fa-times');
@@ -63,6 +66,8 @@ backdrop.addEventListener('click', () => {
     backdrop.classList.remove('active');
     sidebarIcon.classList.remove('fa-times');
     sidebarIcon.classList.add('fa-bars');
+    // Save state
+    localStorage.setItem('sidebarCollapsed', 'true');
 });
 
 // Problem Panel Toggle
@@ -71,6 +76,8 @@ const closeProblemPanel = document.getElementById('closeProblemPanel');
 
 closeProblemPanel.addEventListener('click', () => {
     problemPanel.classList.toggle('collapsed');
+    // Save state
+    localStorage.setItem('problemPanelCollapsed', problemPanel.classList.contains('collapsed'));
 });
 
 // Tab Switching (Editor Panel)
@@ -95,6 +102,9 @@ problemTabButtons.forEach(button => {
         if (targetContent) {
             targetContent.classList.add('active');
         }
+        
+        // Save state
+        localStorage.setItem('activeProblemTab', targetTab);
     });
 });
 
@@ -109,6 +119,9 @@ tabButtons.forEach(button => {
         // Add active class to clicked tab
         button.classList.add('active');
         document.getElementById(`${targetTab}Tab`).classList.add('active');
+        
+        // Save state
+        localStorage.setItem('activeEditorTab', targetTab);
         
         // Show/hide question navigation based on active tab
         if (targetTab === 'questions') {
@@ -251,13 +264,69 @@ let currentQuestionIndex = 0;
 
 // Load default question on page load (wait for DOM to be ready)
 document.addEventListener('DOMContentLoaded', () => {
-    loadQuestion('game-chat').then(() => {
+    // Restore saved state
+    const savedProblem = localStorage.getItem('lastViewedProblem') || 'game-chat';
+    const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+    const savedProblemPanelState = localStorage.getItem('problemPanelCollapsed');
+    const savedEditorTab = localStorage.getItem('activeEditorTab') || 'questions';
+    const savedProblemTab = localStorage.getItem('activeProblemTab') || 'description';
+    
+    // Restore sidebar state
+    if (savedSidebarState === 'true') {
+        sidebar.classList.add('collapsed');
+        const sidebarIcon = toggleSidebarBtn.querySelector('i');
+        if (sidebarIcon) {
+            sidebarIcon.classList.remove('fa-times');
+            sidebarIcon.classList.add('fa-bars');
+        }
+    } else {
+        sidebar.classList.remove('collapsed');
+    }
+    
+    // Restore problem panel state
+    if (savedProblemPanelState === 'true') {
+        problemPanel.classList.add('collapsed');
+    } else {
+        problemPanel.classList.remove('collapsed');
+    }
+    
+    // Restore editor tab
+    const editorTabBtn = document.querySelector(`[data-tab="${savedEditorTab}"]`);
+    if (editorTabBtn) {
+        editorTabBtn.click();
+    }
+    
+    // Restore problem panel tab
+    const problemTabBtn = document.querySelector(`[data-problem-tab="${savedProblemTab}"]`);
+    if (problemTabBtn) {
+        problemTabBtn.click();
+    }
+    
+    // Restore active problem item (need to wait for DOM to be ready)
+    setTimeout(() => {
+        const savedProblemItem = document.querySelector(`[data-question-file="${savedProblem}"]`);
+        if (savedProblemItem) {
+            const allProblemItems = document.querySelectorAll('.problem-item');
+            allProblemItems.forEach(i => i.classList.remove('active'));
+            savedProblemItem.classList.add('active');
+        }
+    }, 100);
+    
+    // Load the saved problem
+    loadQuestion(savedProblem).then(() => {
         questionSections = document.querySelectorAll('.question-section');
         if (questionSections.length > 0) {
             updateQuestionNavigation();
         }
     }).catch(error => {
-        console.error('Failed to load initial question:', error);
+        console.error('Failed to load saved question, loading default:', error);
+        // Fallback to default
+        loadQuestion('game-chat').then(() => {
+            questionSections = document.querySelectorAll('.question-section');
+            if (questionSections.length > 0) {
+                updateQuestionNavigation();
+            }
+        });
     });
 });
 
@@ -280,6 +349,9 @@ problemItems.forEach(item => {
         // Load the question
         const questionFile = item.getAttribute('data-question-file');
         if (questionFile) {
+            // Save to localStorage
+            localStorage.setItem('lastViewedProblem', questionFile);
+            
             // Reset answer state when switching questions
             answersChecked = false;
             answersVisible = false;
@@ -436,6 +508,17 @@ function renderQuestion(data) {
         problemQuestionContext.innerHTML = contextHtml || '';
     }
     
+    // Check if this is a SQL execution question set
+    const hasSQLQuestions = data.questions && data.questions.some(q => q.type === 'sql-execution');
+    
+    // Show/hide test cases tab based on question type (only in editor panel, not problem panel)
+    const editorTestCasesTab = document.getElementById('editorTestCasesTab');
+    if (hasSQLQuestions) {
+        if (editorTestCasesTab) editorTestCasesTab.style.display = 'inline-flex';
+    } else {
+        if (editorTestCasesTab) editorTestCasesTab.style.display = 'none';
+    }
+    
     // Render questions
     renderQuestions(data);
     
@@ -444,6 +527,82 @@ function renderQuestion(data) {
         updateCorrectAnswers(data.questions);
     }
 }
+
+// Load test cases from JSON file
+async function loadTestCases(questionId) {
+    try {
+        const response = await fetch(`questions/sql-review/test-cases/test-cases.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to load test cases: ${response.statusText}`);
+        }
+        const testCases = await response.json();
+        return testCases;
+    } catch (error) {
+        console.error('Error loading test cases:', error);
+        return {};
+    }
+}
+
+// Render practice test cases in the left panel
+function renderPracticeTestCases(testCases, questions) {
+    const practiceTestCasesContainer = document.getElementById('practiceTestCases');
+    if (!practiceTestCasesContainer) return;
+    
+    let html = '';
+    
+    questions.forEach(question => {
+        if (question.type === 'sql-execution' && testCases[question.id]) {
+            const questionTestCases = testCases[question.id];
+            if (questionTestCases.practiceCases && questionTestCases.practiceCases.length > 0) {
+                html += `<div class="test-case-question-group">
+                    <h4 class="test-case-question-title">${question.title}</h4>`;
+                
+                questionTestCases.practiceCases.forEach((testCase, index) => {
+                    // Format expected output as a table
+                    let outputTableHtml = '';
+                    if (testCase.expectedOutput && testCase.expectedOutput.length > 0) {
+                        const columns = Object.keys(testCase.expectedOutput[0]);
+                        outputTableHtml = '<table class="test-case-table"><thead><tr>';
+                        columns.forEach(col => {
+                            outputTableHtml += `<th>${col}</th>`;
+                        });
+                        outputTableHtml += '</tr></thead><tbody>';
+                        
+                        testCase.expectedOutput.forEach(row => {
+                            outputTableHtml += '<tr>';
+                            columns.forEach(col => {
+                                outputTableHtml += `<td>${row[col] !== null && row[col] !== undefined ? row[col] : 'NULL'}</td>`;
+                            });
+                            outputTableHtml += '</tr>';
+                        });
+                        
+                        outputTableHtml += '</tbody></table>';
+                    } else {
+                        outputTableHtml = '<div class="test-case-empty">No rows returned</div>';
+                    }
+                    
+                    html += `
+                        <div class="practice-test-case" data-question-id="${question.id}" data-test-case-id="${testCase.id}">
+                            <div class="test-case-header">
+                                <span class="test-case-name">${testCase.name}</span>
+                            </div>
+                            ${testCase.description ? `<div class="test-case-description">${testCase.description}</div>` : ''}
+                            <div class="test-case-output">
+                                <strong>Output:</strong>
+                                <div class="test-case-result-table">${outputTableHtml}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
+        }
+    });
+    
+    practiceTestCasesContainer.innerHTML = html || '<p>No practice test cases available.</p>';
+}
+
 
 // Render questions
 function renderQuestions(data) {
@@ -589,6 +748,40 @@ function renderQuestions(data) {
                     </div>
                 </div>
             `;
+        } else if (question.type === 'sql-execution') {
+            html += `
+                <div class="question-section ${index === 0 ? 'active' : ''}" data-question="${index}">
+                    <div class="question-header">
+                        <h3 class="question-title">${question.title}</h3>
+                        <p class="question-text">${question.text}</p>
+                    </div>
+                    <div class="sql-execution-group" id="question-${question.id}" data-question-id="${question.id}">
+                        <div class="sql-editor-container">
+                            <textarea 
+                                class="sql-editor" 
+                                id="sql-editor-${question.id}"
+                                placeholder="Write your SQL query here...&#10;Example: SELECT * FROM books;"
+                                spellcheck="false"
+                            ></textarea>
+                            <div class="sql-editor-actions">
+                                <button class="btn-run-query" id="run-query-${question.id}">
+                                    <i class="fas fa-play"></i> Run Query
+                                </button>
+                                <button class="btn-clear-query" id="clear-query-${question.id}">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div class="sql-results-container" id="sql-results-${question.id}">
+                            <div class="sql-results-placeholder">
+                                <i class="fas fa-database"></i>
+                                <p>Write a query and click "Run Query" to see results</p>
+                            </div>
+                        </div>
+                        ${question.hint ? `<p class="question-hint">${question.hint}</p>` : ''}
+                    </div>
+                </div>
+            `;
         } else {
             html += `
                 <div class="question-section ${index === 0 ? 'active' : ''}" data-question="${index}">
@@ -615,6 +808,7 @@ function renderQuestions(data) {
     setTimeout(() => {
         initializeDragAndDrop();
         initializePositionEditing();
+        initializeSQLExecution(data);
     }, 100);
     
     // Reinitialize question navigation
@@ -623,6 +817,542 @@ function renderQuestions(data) {
         currentQuestionIndex = 0;
         updateQuestionNavigation();
     }
+}
+
+// SQL Database Management
+let sqlDB = null;
+let sqlDBInitialized = false;
+
+// Initialize SQL.js database with sample data
+async function initializeSQLDatabase(questionData) {
+    // If already initialized, verify it still works
+    if (sqlDBInitialized && sqlDB) {
+        try {
+            // Quick test to verify database is still valid
+            sqlDB.exec('SELECT 1');
+            return sqlDB;
+        } catch (e) {
+            console.warn('Database appears corrupted, reinitializing...');
+            sqlDB = null;
+            sqlDBInitialized = false;
+        }
+    }
+    
+    try {
+        // Initialize SQL.js - check if it's already loaded
+        let SQL;
+        if (typeof initSqlJs !== 'undefined') {
+            SQL = await initSqlJs({
+                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
+            });
+        } else if (typeof sqljs !== 'undefined') {
+            SQL = sqljs;
+        } else {
+            throw new Error('SQL.js library not loaded');
+        }
+        
+        // Create new database
+        sqlDB = new SQL.Database();
+        
+        // Create tables from schema
+        if (questionData.schema) {
+            Object.values(questionData.schema).forEach(createTableSQL => {
+                try {
+                    sqlDB.run(createTableSQL);
+                } catch (e) {
+                    console.error('Error creating table:', e);
+                }
+            });
+        }
+        
+        // Load and insert sample data
+        let sampleData = questionData.sampleData;
+        
+        // If dataFile is specified, load from file
+        if (questionData.dataFile && !sampleData) {
+            try {
+                const dataResponse = await fetch(questionData.dataFile);
+                if (dataResponse.ok) {
+                    sampleData = await dataResponse.json();
+                    console.log('Loaded sample data from file:', sampleData);
+                } else {
+                    console.error('Failed to load data file:', dataResponse.status, dataResponse.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading data file:', error);
+            }
+        }
+        
+        if (sampleData) {
+            console.log('Inserting sample data into database...');
+            // Insert books
+            if (sampleData.books && sampleData.books.length > 0) {
+                const booksStmt = sqlDB.prepare('INSERT INTO books (book_id, book_name, year, genre, author_id, times_trending) VALUES (?, ?, ?, ?, ?, ?)');
+                sampleData.books.forEach(book => {
+                    try {
+                        booksStmt.run([book.book_id, book.book_name, book.year, book.genre, book.author_id, book.times_trending]);
+                    } catch (e) {
+                        console.error('Error inserting book:', book, e);
+                    }
+                });
+                booksStmt.free();
+                console.log(`Inserted ${sampleData.books.length} books`);
+            }
+            
+            // Insert authors
+            if (sampleData.authors && sampleData.authors.length > 0) {
+                const authorsStmt = sqlDB.prepare('INSERT INTO authors (author_id, author_name, publishing_company, debut_year) VALUES (?, ?, ?, ?)');
+                sampleData.authors.forEach(author => {
+                    try {
+                        authorsStmt.run([author.author_id, author.author_name, author.publishing_company, author.debut_year]);
+                    } catch (e) {
+                        console.error('Error inserting author:', author, e);
+                    }
+                });
+                authorsStmt.free();
+                console.log(`Inserted ${sampleData.authors.length} authors`);
+            }
+            
+            // Insert awards
+            if (sampleData.awards && sampleData.awards.length > 0) {
+                const awardsStmt = sqlDB.prepare('INSERT INTO awards (award_id, book_id, award_name) VALUES (?, ?, ?)');
+                sampleData.awards.forEach(award => {
+                    try {
+                        awardsStmt.run([award.award_id, award.book_id, award.award_name]);
+                    } catch (e) {
+                        console.error('Error inserting award:', award, e);
+                    }
+                });
+                awardsStmt.free();
+                console.log(`Inserted ${sampleData.awards.length} awards`);
+            }
+            
+            // Verify data was inserted
+            try {
+                const testResult = sqlDB.exec('SELECT COUNT(*) as count FROM books');
+                if (testResult.length > 0) {
+                    console.log('Database verification - Books count:', testResult[0].values[0][0]);
+                }
+            } catch (e) {
+                console.error('Error verifying database:', e);
+            }
+        } else {
+            console.warn('No sample data available to insert');
+        }
+        
+        sqlDBInitialized = true;
+        return sqlDB;
+    } catch (error) {
+        console.error('Error initializing SQL database:', error);
+        return null;
+    }
+}
+
+// Initialize SQL execution for questions
+function initializeSQLExecution(questionData) {
+    // Only initialize if there are SQL execution questions
+    const hasSQLQuestions = questionData.questions && questionData.questions.some(q => q.type === 'sql-execution');
+    if (!hasSQLQuestions) return;
+    
+    // Initialize database
+    initializeSQLDatabase(questionData).then(db => {
+        if (!db) {
+            console.error('Failed to initialize SQL database');
+            return;
+        }
+        
+        // Set up event handlers for each SQL execution question
+        questionData.questions.forEach(question => {
+            if (question.type === 'sql-execution') {
+                const runBtn = document.getElementById(`run-query-${question.id}`);
+                const clearBtn = document.getElementById(`clear-query-${question.id}`);
+                const editor = document.getElementById(`sql-editor-${question.id}`);
+                const resultsContainer = document.getElementById(`sql-results-${question.id}`);
+                
+                if (runBtn) {
+                    runBtn.addEventListener('click', () => {
+                        executeSQLQuery(question.id, editor.value, resultsContainer, question);
+                    });
+                }
+                
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        if (editor) editor.value = '';
+                        if (resultsContainer) {
+                            resultsContainer.innerHTML = `
+                                <div class="sql-results-placeholder">
+                                    <i class="fas fa-database"></i>
+                                    <p>Write a query and click "Run Query" to see results</p>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                // Allow Ctrl+Enter to run query
+                if (editor) {
+                    editor.addEventListener('keydown', (e) => {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                            e.preventDefault();
+                            if (runBtn) runBtn.click();
+                        }
+                    });
+                }
+            }
+        });
+        
+        // Set up "Run All Tests" button
+        const runAllTestsBtn = document.getElementById('runAllTestsBtn');
+        if (runAllTestsBtn) {
+            runAllTestsBtn.addEventListener('click', () => {
+                runAllAssessmentTests(questionData);
+            });
+        }
+    });
+}
+
+// Run all assessment test cases
+async function runAllAssessmentTests(questionData) {
+    if (!sqlDB) {
+        alert('Database not initialized. Please wait for the page to load completely.');
+        return;
+    }
+    
+    const testCases = await loadTestCases(questionData.id);
+    const testCasesResults = document.getElementById('testCasesResults');
+    if (!testCasesResults) return;
+    
+    let html = '';
+    let totalTests = 0;
+    let passedTests = 0;
+    
+    questionData.questions.forEach(question => {
+        if (question.type === 'sql-execution' && testCases[question.id]) {
+            const questionTestCases = testCases[question.id];
+            if (questionTestCases.assessmentCases && questionTestCases.assessmentCases.length > 0) {
+                html += `<div class="assessment-test-case-group">
+                    <h4 class="assessment-question-title">${question.title}</h4>`;
+                
+                questionTestCases.assessmentCases.forEach((testCase, index) => {
+                    totalTests++;
+                    const editor = document.getElementById(`sql-editor-${question.id}`);
+                    const userQuery = editor ? editor.value.trim() : '';
+                    
+                    if (!userQuery) {
+                        html += `
+                            <div class="assessment-test-case-item not-run">
+                                <div class="test-case-status-icon"><i class="fas fa-circle"></i></div>
+                                <div class="test-case-info">
+                                    <div class="test-case-name">${testCase.name}</div>
+                                    <div class="test-case-description">${testCase.description}</div>
+                                </div>
+                                <div class="test-case-status">Not Run</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    try {
+                        const result = sqlDB.exec(userQuery);
+                        const actualColumns = result.length > 0 ? result[0].columns : [];
+                        const actualValues = result.length > 0 ? result[0].values : [];
+                        const isCorrect = checkSQLResult(actualColumns, actualValues, testCase.expectedOutput);
+                        
+                        if (isCorrect) {
+                            passedTests++;
+                        }
+                        
+                        // Format expected output for display
+                        let expectedOutputHtml = '';
+                        if (!isCorrect && testCase.expectedOutput) {
+                            if (testCase.expectedOutput.length > 0) {
+                                const columns = Object.keys(testCase.expectedOutput[0]);
+                                expectedOutputHtml = '<div class="test-case-expected-output"><strong>Expected Output:</strong><table class="test-case-table"><thead><tr>';
+                                columns.forEach(col => {
+                                    expectedOutputHtml += `<th>${col}</th>`;
+                                });
+                                expectedOutputHtml += '</tr></thead><tbody>';
+                                testCase.expectedOutput.forEach(row => {
+                                    expectedOutputHtml += '<tr>';
+                                    columns.forEach(col => {
+                                        expectedOutputHtml += `<td>${row[col] !== null && row[col] !== undefined ? row[col] : 'NULL'}</td>`;
+                                    });
+                                    expectedOutputHtml += '</tr>';
+                                });
+                                expectedOutputHtml += '</tbody></table></div>';
+                            } else {
+                                expectedOutputHtml = '<div class="test-case-expected-output"><strong>Expected Output:</strong> <em>No rows returned</em></div>';
+                            }
+                        }
+                        
+                        html += `
+                            <div class="assessment-test-case-item ${isCorrect ? 'passed' : 'failed'}">
+                                <div class="test-case-status-icon">
+                                    <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                </div>
+                                <div class="test-case-info">
+                                    <div class="test-case-name">${testCase.name}</div>
+                                    <div class="test-case-description">${testCase.description}</div>
+                                    ${!isCorrect ? `<div class="test-case-error-details">Result does not match expected output${expectedOutputHtml}</div>` : ''}
+                                </div>
+                                <div class="test-case-status ${isCorrect ? 'passed' : 'failed'}">${isCorrect ? 'Passed' : 'Failed'}</div>
+                            </div>
+                        `;
+                    } catch (error) {
+                        html += `
+                            <div class="assessment-test-case-item failed">
+                                <div class="test-case-status-icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="test-case-info">
+                                    <div class="test-case-name">${testCase.name}</div>
+                                    <div class="test-case-description">${testCase.description}</div>
+                                    <div class="test-case-error-details">Error: ${error.message}</div>
+                                </div>
+                                <div class="test-case-status failed">Failed</div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `</div>`;
+            }
+        }
+    });
+    
+    if (html === '') {
+        html = '<div class="empty-test-cases"><i class="fas fa-vial"></i><p>No assessment test cases available.</p></div>';
+    } else {
+        html = `
+            <div class="test-cases-summary">
+                <div class="summary-stats">
+                    <span class="stat-item">${passedTests}/${totalTests} test cases passed</span>
+                </div>
+            </div>
+            ${html}
+        `;
+    }
+    
+    testCasesResults.innerHTML = html;
+}
+
+// Execute SQL query and display results
+function executeSQLQuery(questionId, query, resultsContainer, questionData) {
+    if (!sqlDB) {
+        resultsContainer.innerHTML = `
+            <div class="sql-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Database not initialized. Please refresh the page.</p>
+            </div>
+        `;
+        console.error('SQL database not initialized');
+        return;
+    }
+    
+    if (!query || !query.trim()) {
+        resultsContainer.innerHTML = `
+            <div class="sql-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Please enter a SQL query.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        // Execute query
+        console.log('Executing query:', query.trim());
+        const result = sqlDB.exec(query.trim());
+        console.log('Query result:', result);
+        
+        if (result.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="sql-success">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Query executed successfully. No rows returned.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Verify we have result data
+        if (!result[0] || !result[0].columns || !result[0].values) {
+            resultsContainer.innerHTML = `
+                <div class="sql-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Query executed but returned invalid result format.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Display results in a table
+        const columns = result[0].columns;
+        const values = result[0].values;
+        
+        console.log('Query returned:', columns.length, 'columns,', values.length, 'rows');
+        
+        let html = '<div class="sql-results-table-container"><table class="sql-results-table"><thead><tr>';
+        columns.forEach(col => {
+            html += `<th>${col}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+        
+        values.forEach(row => {
+            html += '<tr>';
+            row.forEach(cell => {
+                html += `<td>${cell !== null && cell !== undefined ? cell : 'NULL'}</td>`;
+            });
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table></div>';
+        
+        // Check if result matches expected result (for answer checking)
+        if (questionData.expectedResult) {
+            console.log('Comparing results:');
+            console.log('Actual columns:', columns);
+            console.log('Actual values:', values);
+            console.log('Expected result:', questionData.expectedResult);
+            const isCorrect = checkSQLResult(columns, values, questionData.expectedResult);
+            console.log('Comparison result:', isCorrect);
+            if (isCorrect !== null) {
+                html += `
+                    <div class="sql-answer-feedback ${isCorrect ? 'correct' : 'incorrect'}">
+                        <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                        <span>${isCorrect ? 'Correct! Your query produces the expected result.' : 'Your query does not match the expected result. Try again.'}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        resultsContainer.innerHTML = html;
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div class="sql-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p><strong>SQL Error:</strong> ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Check if SQL result matches expected result
+// Compares: same columns, same number of rows, same row data
+function checkSQLResult(columns, values, expectedResult) {
+    if (!expectedResult || expectedResult.length === 0) {
+        // If expected is empty, actual should also be empty
+        return values.length === 0;
+    }
+    
+    // Check 1: Same number of rows (shape)
+    if (values.length !== expectedResult.length) {
+        return false;
+    }
+    
+    // Check 2: Same columns (column names must match)
+    const expectedColumns = Object.keys(expectedResult[0]).map(k => k.toLowerCase()).sort();
+    const actualColumns = columns.map(c => c.toLowerCase()).sort();
+    
+    if (expectedColumns.length !== actualColumns.length) {
+        return false;
+    }
+    
+    for (let i = 0; i < expectedColumns.length; i++) {
+        if (expectedColumns[i] !== actualColumns[i]) {
+            return false;
+        }
+    }
+    
+    // Check 3: Same rows (all rows must match)
+    // Convert actual values to objects with lowercase keys for comparison
+    const normalizedActual = values.map(row => {
+        const obj = {};
+        columns.forEach((col, idx) => {
+            // Normalize the value - handle null, undefined, and convert to comparable format
+            let val = row[idx];
+            if (val === null || val === undefined) {
+                val = null;
+            } else if (typeof val === 'number') {
+                val = val; // Keep numbers as numbers for comparison
+            } else {
+                val = String(val).trim(); // Trim strings
+            }
+            obj[col.toLowerCase()] = val;
+        });
+        return obj;
+    });
+    
+    const normalizedExpected = expectedResult.map(row => {
+        const obj = {};
+        Object.keys(row).forEach(key => {
+            // Normalize the value
+            let val = row[key];
+            if (val === null || val === undefined) {
+                val = null;
+            } else if (typeof val === 'number') {
+                val = val; // Keep numbers as numbers
+            } else {
+                val = String(val).trim(); // Trim strings
+            }
+            obj[key.toLowerCase()] = val;
+        });
+        return obj;
+    });
+    
+    // Sort both arrays by all column values for comparison (order might differ)
+    const createSortKey = (obj) => {
+        const keys = Object.keys(obj).sort();
+        return keys.map(k => {
+            const v = obj[k];
+            if (v === null || v === undefined) return 'NULL';
+            return String(v);
+        }).join('|');
+    };
+    
+    normalizedActual.sort((a, b) => createSortKey(a).localeCompare(createSortKey(b)));
+    normalizedExpected.sort((a, b) => createSortKey(a).localeCompare(createSortKey(b)));
+    
+    console.log('Normalized actual (sorted):', normalizedActual);
+    console.log('Normalized expected (sorted):', normalizedExpected);
+    
+    // Compare each row
+    for (let i = 0; i < normalizedActual.length; i++) {
+        const actual = normalizedActual[i];
+        const expected = normalizedExpected[i];
+        
+        console.log(`Comparing row ${i}:`, actual, 'vs', expected);
+        
+        // Check all columns match
+        for (const key of expectedColumns) {
+            const actualVal = actual[key];
+            const expectedVal = expected[key];
+            
+            // Handle null/undefined comparison
+            if ((actualVal === null || actualVal === undefined) && (expectedVal === null || expectedVal === undefined)) {
+                continue;
+            }
+            
+            // Compare values - use strict equality for numbers, string comparison for others
+            if (typeof actualVal === 'number' && typeof expectedVal === 'number') {
+                if (actualVal !== expectedVal) {
+                    console.log(`Mismatch at row ${i}, key ${key}: ${actualVal} !== ${expectedVal}`);
+                    return false;
+                }
+            } else {
+                // Convert both to strings for comparison
+                const actualStr = String(actualVal);
+                const expectedStr = String(expectedVal);
+                if (actualStr !== expectedStr) {
+                    console.log(`Mismatch at row ${i}, key ${key}: "${actualStr}" !== "${expectedStr}"`);
+                    return false;
+                }
+            }
+        }
+    }
+    
+    console.log('All rows match!');
+    return true;
 }
 
 // Initialize drag-and-drop functionality
@@ -1040,6 +1770,9 @@ function updateCorrectAnswers(questions) {
                     correctAnswers[question.id][node.id] = node.correctOperator;
                 });
             }
+        } else if (question.type === 'sql-execution') {
+            // Store correct query for SQL execution questions
+            correctAnswers[question.id] = question.correctQuery || '';
         } else {
             const correct = question.options
                 .filter(opt => opt.isCorrect)
@@ -1149,6 +1882,39 @@ function checkAnswers() {
             }
             
             isCorrect = allCorrect;
+            score = isCorrect ? question.points : 0;
+        } else if (question.type === 'sql-execution') {
+            // Handle SQL execution questions
+            const editor = document.getElementById(`sql-editor-${question.id}`);
+            const resultsContainer = document.getElementById(`sql-results-${question.id}`);
+            
+            if (!editor) {
+                console.error(`SQL editor not found for question: ${question.id}`);
+                return;
+            }
+            
+            selected = editor.value.trim();
+            correct = question.correctQuery || '';
+            
+            // Check if there's a feedback element indicating correctness
+            const feedbackElement = resultsContainer.querySelector('.sql-answer-feedback');
+            if (feedbackElement) {
+                isCorrect = feedbackElement.classList.contains('correct');
+            } else {
+                // If no feedback yet, try to execute and check
+                if (selected) {
+                    executeSQLQuery(question.id, selected, resultsContainer, question);
+                    // Re-check after execution
+                    setTimeout(() => {
+                        const newFeedback = resultsContainer.querySelector('.sql-answer-feedback');
+                        isCorrect = newFeedback ? newFeedback.classList.contains('correct') : false;
+                    }, 100);
+                    isCorrect = false; // Default to false, will be updated by execution
+                } else {
+                    isCorrect = false;
+                }
+            }
+            
             score = isCorrect ? question.points : 0;
         } else {
             // Handle multiple choice questions

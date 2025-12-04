@@ -114,6 +114,27 @@
           "isCorrect": true
         }
       ]
+    },
+    {
+      "id": "1.1.iii",
+      "title": "1.1.iii [3 pt]",
+      "text": "Games using your service are gaining new players. Your clients (games) want to impose a constraint: when a new player signs up, they cannot reuse an existing player name <strong>within the same game</strong>. However, users <strong>are</strong> allowed to reuse their player name across different games. What kind of constraint should you implement on the <code>players</code> table and on which column(s)?",
+      "type": "text-input-blanks",
+      "points": 3,
+      "prompt": "ALTER TABLE players ADD CONSTRAINT new_constraint ______________ (_____________);",
+      "blanks": [
+        {
+          "id": "constraint-type",
+          "placeholder": "Blank 1",
+          "correctAnswer": "UNIQUE"
+        },
+        {
+          "id": "columns",
+          "placeholder": "Blank 2",
+          "correctAnswer": "game_id, player_name"
+        }
+      ],
+      "hint": "Think about which columns together should be unique within the same game. Make sure to separate attributes with a comma, and space between them. Note: SQL is case-insensitive, so capitalization doesn't matter."
     }
   ]
 }
