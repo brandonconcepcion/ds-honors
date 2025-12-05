@@ -674,9 +674,10 @@ function renderQuestions(data) {
                 </div>
             `).join('');
             
-            // Load saved positions from localStorage
+            // Load saved positions from localStorage (skip for questions that should use fixed positions)
             const savedPositionsKey = `diagram-positions-${question.id}`;
-            const savedPositions = JSON.parse(localStorage.getItem(savedPositionsKey) || '{}');
+            const useFixedPositions = question.id === '2.1'; // Food delivery question - use fixed positions
+            const savedPositions = useFixedPositions ? {} : JSON.parse(localStorage.getItem(savedPositionsKey) || '{}');
             
             // Generate nodes from nodeGroups
             let nodeIndex = 0;
@@ -688,8 +689,10 @@ function renderQuestions(data) {
                 
                 return Array.from({length: count}, (_, i) => {
                     const nodeId = `${label}-${i}`;
-                    const savedPos = savedPositions[nodeId];
-                    const position = savedPos || defaultPositions[i] || defaultPositions[0] || {top: '0%', left: '0%'};
+                    // For fixed position questions, always use defaultPositions from JSON
+                    const position = useFixedPositions 
+                        ? (defaultPositions[i] || defaultPositions[0] || {top: '0%', left: '0%'})
+                        : (savedPositions[nodeId] || defaultPositions[i] || defaultPositions[0] || {top: '0%', left: '0%'});
                     const style = `position: absolute; top: ${position.top || '0%'}; left: ${position.left || '0%'};`;
                     
                     return `
@@ -720,7 +723,7 @@ function renderQuestions(data) {
                             <div class="diagram-header">
                                 <h4 class="plan-title">Execution Plan Diagram</h4>
                                 <div class="diagram-controls">
-                                    <button class="btn-edit-positions" id="editPositions-${question.id}">Edit Positions</button>
+                                    ${question.id === '2.1' ? '' : `<button class="btn-edit-positions" id="editPositions-${question.id}">Edit Positions</button>`}
                                     <button class="btn-add-node" id="addNode-${question.id}" style="display: none;">Add Node</button>
                                     <button class="btn-save-positions" id="savePositions-${question.id}" style="display: none;">Save Positions</button>
                                     <button class="btn-cancel-edit" id="cancelEdit-${question.id}" style="display: none;">Cancel</button>
